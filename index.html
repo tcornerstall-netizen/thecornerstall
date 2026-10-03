@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Corner Stall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     EDIT ME: shop settings — change these to your own details
+     ============================================================ */
+  /* See SHOP_CONFIG in the <script> near the bottom of this file
+     to set your shop name, WhatsApp number, email, and currency. */
+
+  :root{
+    --paper: #EDE4CF;
+    --paper-dark: #E2D6BC;
+    --ink: #22281D;
+    --forest: #2F4C3B;
+    --forest-dark: #223a2c;
+    --rust: #B8622E;
+    --plum: #6E2B3A;
+    --line: #3A2E1F;
+    --line-soft: rgba(58,46,31,0.25);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.5;
+  }
+  h1,h2,h3{
+    font-family: 'Fraunces', serif;
+    margin: 0;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  a{ color: inherit; }
+  button{ font-family: inherit; cursor: pointer; }
+  :focus-visible{ outline: 2px solid var(--forest); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  .wrap{ max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Header ---------- */
+  header{
+    border-bottom: 2px solid var(--line);
+    background: var(--paper);
+    position: sticky; top:0; z-index: 40;
+  }
+  .header-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 24px;
+    max-width: 1080px; margin: 0 auto;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{ font-size: 1.5rem; }
+  .brand span{ font-size: 0.75rem; color: var(--forest); }
+  .cart-btn{
+    background: var(--forest);
+    color: var(--paper);
+    border: none;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    display:flex; align-items:center; gap:8px;
+    border-radius: 2px;
+  }
+  .cart-btn:hover{ background: var(--forest-dark); }
+  .cart-count{
+    background: var(--rust);
+    color: white;
+    border-radius: 50%;
+    width: 20px; height:20px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 0.7rem;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 56px 24px 40px;
+    border-bottom: 2px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-inner{
+    max-width: 1080px; margin: 0 auto;
+    display:grid; grid-template-columns: 1.4fr 1fr; gap: 40px;
+    align-items: end;
+  }
+  .hero h2{
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    max-width: 14ch;
+  }
+  .hero p{
+    max-width: 46ch;
+    margin-top: 18px;
+    font-size: 0.95rem;
+    color: #40473a;
+  }
+  .stamp{
+    justify-self: end;
+    width: 128px; height: 128px;
+    border: 2px dashed var(--rust);
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    transform: rotate(-9deg);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--rust);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    flex-shrink: 0;
+  }
+
+  .steps{
+    display:flex; gap: 28px; margin-top: 40px; flex-wrap: wrap;
+  }
+  .step{ display:flex; gap: 12px; max-width: 220px; }
+  .step-num{
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    color: var(--forest);
+    flex-shrink:0;
+  }
+  .step p{ margin: 2px 0 0; font-size: 0.82rem; color: #40473a; }
+
+  /* ---------- Category chips ---------- */
+  .cats{
+    display:flex; gap: 10px; flex-wrap: wrap;
+    padding: 28px 24px 0;
+    max-width: 1080px; margin: 0 auto;
+  }
+  .chip{
+    border: 1.5px solid var(--line);
+    background: transparent;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--ink);
+  }
+  .chip.active{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .chip:hover:not(.active){ background: var(--paper-dark); }
+
+  /* ---------- Product grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0;
+    max-width: 1080px; margin: 0 auto;
+    padding: 20px 24px 60px;
+    border-top: 1.5px solid var(--line-soft);
+  }
+  .card{
+    border-bottom: 1.5px solid var(--line-soft);
+    border-right: 1.5px solid var(--line-soft);
+    padding: 22px 18px;
+    display:flex; flex-direction:column; gap: 10px;
+  }
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .card-emoji{ font-size: 2rem; }
+  .tag{
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    color: white;
+    white-space: nowrap;
+  }
+  .card h3{ font-size: 1.05rem; margin-top: 4px; }
+  .card .desc{ font-size: 0.78rem; color: #4d5443; flex-grow:1; }
+  .card-bottom{ display:flex; justify-content:space-between; align-items:center; margin-top: 6px; }
+  .price{ font-weight: 600; font-size: 0.95rem; }
+  .add-btn{
+    background: transparent;
+    border: 1.5px solid var(--forest);
+    color: var(--forest);
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    border-radius: 2px;
+  }
+  .add-btn:hover{ background: var(--forest); color: var(--paper); }
+  .add-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+
+  .empty-msg{
+    padding: 40px 0; text-align:center; color:#666; font-size:0.85rem;
+    grid-column: 1/-1;
+  }
+
+  /* ---------- Cart drawer ---------- */
+  .overlay{
+    position: fixed; inset:0; background: rgba(34,40,29,0.4);
+    opacity:0; pointer-events:none; transition: opacity 0.2s;
+    z-index: 50;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position: fixed; top:0; right:0; height:100%;
+    width: min(400px, 100%);
+    background: var(--paper);
+    border-left: 2px solid var(--line);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 60;
+    display:flex; flex-direction:column;
+  }
+  .drawer.open{ transform: translateX(0); }
+  .drawer-head{
+    padding: 20px; border-bottom: 2px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .drawer-head h3{ font-size: 1.2rem; }
+  .close-btn{
+    background:none; border:none; font-size: 1.4rem; color: var(--ink); line-height:1;
+  }
+  .drawer-body{ flex-grow:1; overflow-y:auto; padding: 8px 20px; }
+  .line-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+    gap: 10px;
+  }
+  .li-info{ flex-grow:1; }
+  .li-info .name{ font-family:'Fraunces', serif; font-weight:600; font-size:0.95rem; }
+  .li-info .unit{ font-size: 0.72rem; color:#666; }
+  .qty-ctrl{ display:flex; align-items:center; gap:8px; }
+  .qty-ctrl button{
+    width:24px; height:24px; border:1.5px solid var(--line); background:transparent; border-radius:2px;
+  }
+  .li-remove{ background:none; border:none; color: var(--rust); font-size:0.7rem; text-decoration: underline; margin-top:4px; }
+
+  .drawer-foot{ border-top: 2px solid var(--line); padding: 18px 20px 24px; }
+  .total-row{ display:flex; justify-content:space-between; font-size:1.05rem; margin-bottom: 14px; }
+  .total-row strong{ font-family:'Fraunces', serif; }
+  .checkout-btn{
+    width:100%; background: var(--rust); color:white; border:none; padding: 13px; font-size:0.9rem; border-radius:2px;
+  }
+  .checkout-btn:hover{ background:#9c5227; }
+  .checkout-btn:disabled{ opacity:0.4; }
+
+  /* ---------- Checkout form ---------- */
+  .form-section{ padding-top: 6px; }
+  .form-section label{ display:block; font-size:0.72rem; margin: 12px 0 4px; color:#4d5443; }
+  .form-section input, .form-section textarea{
+    width:100%; border:1.5px solid var(--line); background: white;
+    padding: 9px 10px; font-family: inherit; font-size: 0.85rem; border-radius:2px;
+  }
+  .form-section textarea{ resize: vertical; min-height: 60px; }
+  .back-link{ background:none; border:none; font-size:0.72rem; text-decoration:underline; color: var(--forest); padding:0; margin-bottom: 4px; }
+
+  .send-options{ display:flex; flex-direction:column; gap:8px; margin-top: 14px; }
+  .send-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding: 12px; border-radius:2px; border: none; font-size:0.85rem;
+  }
+  .send-btn.whatsapp{ background:#3f7a56; color:white; }
+  .send-btn.email{ background: var(--forest); color:white; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top: 2px solid var(--line);
+    padding: 32px 24px 40px;
+    font-size: 0.78rem;
+    color: #4d5443;
+  }
+  .footer-inner{ max-width:1080px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap: 16px; }
+
+  @media (max-width: 720px){
+    .hero-inner{ grid-template-columns: 1fr; }
+    .stamp{ justify-self:start; margin-top: 20px; }
+    .card{ border-right: none; }
+    .grid{ grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px){
+    .grid{ grid-template-columns: 1fr; }
+    .header-inner{ padding: 14px 16px; }
+    .hero{ padding: 40px 16px 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1 id="shopNameEl">The Corner Stall</h1>
+      <span>est. 2026</span>
+    </div>
+    <button class="cart-btn" onclick="openCart()">
+      Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <h2>Fresh finds, grown-your-own herbs, and a few good things in between.</h2>
+      <p>Everything here is sold in small batches by hand — message me on WhatsApp or email once you've picked what you want, and I'll confirm pickup or delivery.</p>
+    </div>
+    <div class="stamp">picked &amp; packed<br>by hand</div>
+  </div>
+  <div class="wrap">
+    <div class="steps">
+      <div class="step"><span class="step-num">1</span><p>Browse the stall and add what you want to your basket.</p></div>
+      <div class="step"><span class="step-num">2</span><p>Open your cart and fill in your name and contact details.</p></div>
+      <div class="step"><span class="step-num">3</span><p>Send the order — I'll reply to confirm price and pickup.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cats" id="catRow"></div>
+<div class="grid" id="productGrid"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <strong id="footShopName">The Corner Stall</strong><br>
+      Pickup available anytime
+    </div>
+    <div id="footContact">
+      WhatsApp: <span id="footPhone">@thecornerstall</span><br>
+      Email: <span id="footEmail">tcornerstall@gmail.com</span>
+    </div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h3>Your basket</h3>
+    <button class="close-btn" onclick="closeCart()">&times;</button>
+  </div>
+
+  <div id="cartView">
+    <div class="drawer-body" id="cartBody"></div>
+    <div class="drawer-foot">
+      <div class="total-row"><span>Total</span><strong id="cartTotal">GHS 0</strong></div>
+      <button class="checkout-btn" id="checkoutBtn" onclick="showCheckout()">Checkout</button>
+    </div>
+  </div>
+
+  <div id="checkoutView" style="display:none; display:flex; flex-direction:column; height:100%;">
+    <div class="drawer-body form-section">
+      <button class="back-link" onclick="showCart()">&larr; back to basket</button>
+      <label for="custName">Your name</label>
+      <input id="custName" type="text" placeholder="Full name">
+      <label for="custPhone">Phone (for WhatsApp)</label>
+      <input id="custPhone" type="text" placeholder="e.g. 555 123 4567">
+      <label for="custNote">Pickup, delivery or notes</label>
+      <textarea id="custNote" placeholder="e.g. pickup tomorrow afternoon"></textarea>
+    </div>
+    <div class="drawer-foot">
+      <div class="total-row"><span>Total</span><strong id="cartTotal2">GHS 0</strong></div>
+      <div class="send-options">
+        <button class="send-btn whatsapp" onclick="sendOrder('whatsapp')">Send order via WhatsApp</button>
+        <button class="send-btn email" onclick="sendOrder('email')">Send order via email</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   EDIT ME: shop settings
+   ============================================================ */
+const SHOP_CONFIG = {
+  name: "The Corner Stall",
+  currency: "GHS ",
+  whatsappNumber: "233592417765",   // digits only, country code, no + or spaces
+  email: "tcornerstall@gmail.com"
+};
+
+/* ============================================================
+   EDIT ME: your products
+   category ids are free text — used for the filter chips
+   emoji is just a stand-in for a photo; swap for <img> later if you want
+   ============================================================ */
+const PRODUCTS = [
+  { id: 1, name: "Candles", price: 12, category: "home", emoji: "🕯️", desc: "Soy wax, unscented.", tagColor: "#B8622E" },
+  { id: 2, name: "Hibiscus Bissap", price: 10, category: "drinks", emoji: "🌺", desc: "Chilled hibiscus drink, made fresh.", tagColor: "#6E2B3A" },
+  { id: 3, name: "Rosemary Sprigs", price: 10, category: "herbs", emoji: "🌱", desc: "Woody and fragrant, home-grown.", tagColor: "#2F4C3B" },
+];
+
+/* ============================================================
+   Everything below this line runs the shop — no edits needed
+   ============================================================ */
+document.getElementById('shopNameEl').textContent = SHOP_CONFIG.name;
+document.getElementById('footShopName').textContent = SHOP_CONFIG.name;
+document.getElementById('footEmail').textContent = SHOP_CONFIG.email;
+
+let cart = {}; // { productId: qty }
+let activeCat = 'all';
+
+function fmt(n){ return SHOP_CONFIG.currency + (Number.isInteger(n) ? n : n.toFixed(2)); }
+
+function getCategories(){
+  const cats = ['all', ...new Set(PRODUCTS.map(p => p.category))];
+  return cats;
+}
+
+function renderCats(){
+  const row = document.getElementById('catRow');
+  row.innerHTML = '';
+  getCategories().forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (cat === activeCat ? ' active' : '');
+    btn.textContent = cat === 'all' ? 'All items' : cat.charAt(0).toUpperCase() + cat.slice(1);
+    btn.onclick = () => { activeCat = cat; renderCats(); renderGrid(); };
+    row.appendChild(btn);
+  });
+}
+
+function renderGrid(){
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '';
+  const items = activeCat === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.category === activeCat);
+  if(items.length === 0){
+    grid.innerHTML = '<p class="empty-msg">Nothing in this category yet.</p>';
+    return;
+  }
+  items.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-emoji">${p.emoji}</span>
+        <span class="tag" style="background:${p.tagColor}">${p.category}</span>
+      </div>
+      <h3>${p.name}</h3>
+      <p class="desc">${p.desc}</p>
+      <div class="card-bottom">
+        <span class="price">${fmt(p.price)}</span>
+        <button class="add-btn" onclick="addToCart(${p.id})">Add</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function addToCart(id){
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartCount();
+  renderCartBody();
+}
+
+function changeQty(id, delta){
+  if(!cart[id]) return;
+  cart[id] += delta;
+  if(cart[id] <= 0) delete cart[id];
+  updateCartCount();
+  renderCartBody();
+}
+
+function removeItem(id){
+  delete cart[id];
+  updateCartCount();
+  renderCartBody();
+}
+
+function updateCartCount(){
+  const total = Object.values(cart).reduce((a,b) => a+b, 0);
+  document.getElementById('cartCount').textContent = total;
+}
+
+function cartTotalValue(){
+  return Object.entries(cart).reduce((sum, [id, qty]) => {
+    const p = PRODUCTS.find(p => p.id == id);
+    return sum + (p ? p.price * qty : 0);
+  }, 0);
+}
+
+function renderCartBody(){
+  const body = document.getElementById('cartBody');
+  const ids = Object.keys(cart);
+  if(ids.length === 0){
+    body.innerHTML = '<p class="empty-msg">Your basket is empty.</p>';
+  } else {
+    body.innerHTML = '';
+    ids.forEach(id => {
+      const p = PRODUCTS.find(p => p.id == id);
+      const qty = cart[id];
+      const row = document.createElement('div');
+      row.className = 'line-item';
+      row.innerHTML = `
+        <div class="li-info">
+          <div class="name">${p.emoji} ${p.name}</div>
+          <div class="unit">${fmt(p.price)} each</div>
+          <button class="li-remove" onclick="removeItem(${p.id})">remove</button>
+        </div>
+        <div class="qty-ctrl">
+          <button onclick="changeQty(${p.id}, -1)">&minus;</button>
+          <span>${qty}</span>
+          <button onclick="changeQty(${p.id}, 1)">+</button>
+        </div>
+      `;
+      body.appendChild(row);
+    });
+  }
+  const total = cartTotalValue();
+  document.getElementById('cartTotal').textContent = fmt(total);
+  document.getElementById('cartTotal2').textContent = fmt(total);
+  document.getElementById('checkoutBtn').disabled = ids.length === 0;
+}
+
+function openCart(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  showCart();
+  renderCartBody();
+}
+function closeCart(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function showCheckout(){
+  document.getElementById('cartView').style.display = 'none';
+  document.getElementById('checkoutView').style.display = 'flex';
+}
+function showCart(){
+  document.getElementById('cartView').style.display = 'block';
+  document.getElementById('checkoutView').style.display = 'none';
+}
+
+function buildOrderText(){
+  const name = document.getElementById('custName').value.trim() || '(no name given)';
+  const phone = document.getElementById('custPhone').value.trim();
+  const note = document.getElementById('custNote').value.trim();
+  let lines = [`New order from ${name}`];
+  if(phone) lines.push(`Phone: ${phone}`);
+  lines.push('---');
+  Object.entries(cart).forEach(([id, qty]) => {
+    const p = PRODUCTS.find(p => p.id == id);
+    lines.push(`${qty} x ${p.name} — ${fmt(p.price * qty)}`);
+  });
+  lines.push('---');
+  lines.push(`Total: ${fmt(cartTotalValue())}`);
+  if(note) lines.push(`Note: ${note}`);
+  return lines.join('\n');
+}
+
+function sendOrder(via){
+  if(Object.keys(cart).length === 0) return;
+  const text = buildOrderText();
+  if(via === 'whatsapp'){
+    const url = `https://wa.me/${SHOP_CONFIG.whatsappNumber}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  } else {
+    const subject = encodeURIComponent(`Order from ${document.getElementById('custName').value.trim() || 'a customer'}`);
+    const body = encodeURIComponent(text);
+    window.location.href = `mailto:${SHOP_CONFIG.email}?subject=${subject}&body=${body}`;
+  }
+}
+
+renderCats();
+renderGrid();
+</script>
+
+</body>
+</html>
